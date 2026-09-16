@@ -79,6 +79,23 @@ and `0` otherwise. That makes it usable as a deployment gate:
 Scan only applications you own or have written permission to test. The
 `--authorized` flag makes that decision explicit.
 
+## Tests
+
+45 tests, 84% line coverage. No dependencies, and **no test contacts a
+real external service** — network-facing code is exercised against local fake
+servers bound to an ephemeral port.
+
+```bash
+# Run the suite
+python3 -m unittest discover -s tests -v
+
+# Fail on any leaked socket, file, or database connection
+python3 -W error::ResourceWarning -m unittest discover -s tests
+```
+
+CI runs the suite on Python 3.10–3.13 on every push, plus a coverage gate and a
+3.10 syntax check. See [.github/workflows/tests.yml](.github/workflows/tests.yml).
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

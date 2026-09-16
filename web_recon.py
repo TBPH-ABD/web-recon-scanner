@@ -101,8 +101,12 @@ def fetch(url: str, timeout: float) -> tuple[int, dict, bytes, str]:
             headers = {k.lower(): v for k, v in response.headers.items()}
             return response.status, headers, response.read(200_000), response.url
     except urllib.error.HTTPError as exc:
-        headers = {k.lower(): v for k, v in exc.headers.items()} if exc.headers else {}
-        return exc.code, headers, exc.read(50_000), url
+        # An HTTPError is itself a response object holding an open buffer;
+        # close it or the interpreter leaks a temporary file per error.
+        with exc:
+            headers = ({k.lower(): v for k, v in exc.headers.items()}
+                       if exc.headers else {})
+            return exc.code, headers, exc.read(50_000), url
 
 
 def inspect_tls(hostname: str, port: int, timeout: float) -> dict:
